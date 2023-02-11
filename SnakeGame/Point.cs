@@ -10,7 +10,7 @@ namespace SnakeGame
         public int X { get; private set; }
         public int Y { get; private set; }
 
-        // Constructor with three arguments
+        // Constructor
         public Point(char s, int a, int b)
         {
             Symbol = s;
