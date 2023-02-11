@@ -8,122 +8,142 @@ namespace SnakeGame
     {
         static void Main(string[] args)
         {
-            int width = 40;
-            int height = 20;
-            Console.CursorVisible = false;
+            // Settings
+            char snakeSymbol = '*', fruitSymbol = '@';
+            int snakeLength = 3;
+            int gameSpeed = 5;
+            int width = 40, height = 20;
+
+            // Set console to the desired size and 
             Console.SetWindowSize(width, height);
-            Snake sss = new Snake(3, width / 2, height / 2);
+            Console.CursorVisible = false;
 
-            Random rnd = new Random();
-            Point fruit = new Point() { x = rnd.Next(0, width), y = rnd.Next(0, height), symbol = '@' };
-            fruit.Draw();
+            // Create the snake and fruit, at some them at some starting positions
+            Snake harry = new Snake(snakeSymbol, width / 2, height / 2, snakeLength);
+            Point cherry = new Point(fruitSymbol, width / 4, height / 4);
 
+            // Game loop
             while (true)
             {
                 if (Console.KeyAvailable)
                 {
-                    ConsoleKey consoleKey = Console.ReadKey(true).Key;
-                    sss.ChangeSpeed(consoleKey);
+                    ConsoleKey consoleKey = Console.ReadKey(true).Key;  // true so the pressed key is not displayed
+                    harry.ChangeVelocity(consoleKey);
                 }
 
-                Thread.Sleep(200);
-                sss.Move();
+                Thread.Sleep(1000 / gameSpeed);
+                harry.MoveSnake(cherry);
             }
         }
     }
 
-    /**********************************************/
+    /**************************************************************/
 
     class Point
     {
-        public int x;
-        public int y;
-        public char symbol;
+        char Symbol { get; }
+        public int X { get; private set; }
+        public int Y { get; private set; }
+
+        // Constructor with three arguments
+        public Point(char s, int a, int b)
+        {
+            Symbol = s;
+            X = a;
+            Y = b;
+            Draw();
+        } 
 
         public void Draw()
         {
-            Console.SetCursorPosition(x, y);
-            Console.Write(symbol);
+            Console.SetCursorPosition(X, Y);
+            Console.Write(Symbol);
+        }
+
+        public void SetRandomPositionAndDraw()
+        {
+            Random rnd = new Random();
+            X = rnd.Next(0, Console.WindowWidth);
+            Y = rnd.Next(0, Console.WindowHeight);
+            Draw();
         }
     }
 
-    /**********************************************/
+    /**************************************************************/
 
     class Snake
     {
-        LinkedList<Point> body = new LinkedList<Point>();
-        char bodyPart = '*';
-        public bool eaten = false;
+        LinkedList<Point> body = new LinkedList<Point>();   // snake body
+        char bodySymbol;
+        int vX = 1, vY = 0;                                 // snake velocity, initially set to the right
 
-        // Velocity, initially set to (1, 0)
-        public int speedX = 0;
-        public int speedY = 1;
-
-        public Snake(int length, int startX, int startY)
+        // Constructor which puts snake's head at the starting position and the body to the left of the head
+        public Snake(char snakeBody, int startX, int startY, int snakeLength)
         {
-            for (int i = 0; i < length; i++)
+            bodySymbol = snakeBody;
+            for (int i = 0; i < snakeLength; i++)
             {
-                body.AddLast(new Point() { x = startX, y = startY, symbol = bodyPart });
+                Point p = new Point(bodySymbol, startX, startY);
+                body.AddLast(p);
                 startX--;
             }
-
-            foreach (Point p in body)
-                p.Draw();
         }
 
-        public void ChangeSpeed(ConsoleKey key)
+        public void ChangeVelocity(ConsoleKey key)
         {
             switch (key)
             {
                 case ConsoleKey.UpArrow:
-                    if (speedY != 1)
-                    {
-                        speedX = 0;
-                        speedY = -1;
-                    }
+                    if (vY != 1)
+                        (vX, vY) = (0, -1);
                     break;
                 case ConsoleKey.DownArrow:
-                    if (speedY != -1)
-                    {
-                        speedX = 0;
-                        speedY = 1;
-                    }
-                    break;
-                case ConsoleKey.RightArrow:
-                    if (speedX != -1)
-                    {
-                        speedX = 1;
-                        speedY = 0;
-                    }
+                    if (vY != -1)
+                        (vX, vY) = (0, 1);
                     break;
                 case ConsoleKey.LeftArrow:
-                    if (speedX != 1)
-                    {
-                        speedX = -1;
-                        speedY = 0;
-                    }
+                    if (vX != 1)
+                        (vX, vY) = (-1, 0);
+                    break;
+                case ConsoleKey.RightArrow:
+                    if (vX != -1)
+                        (vX, vY) = (1, 0);
                     break;
             }
         }
 
-        public void Move()
+        public bool DetectCollision(int newX, int newY)
         {
-            // If snake didn't eat, remove the last element
-            if (!eaten)
+            // Check if the new head position collides with any of the snake elements
+            foreach (Point p in body)
+                if (p.X == newX && p.Y == newY)
+                    return true;    // return true if collision found
+
+            return false;           // return false if no collisions
+        }
+
+        public void MoveSnake(Point fruit)
+        {
+            // Move the head to new position
+            Point head = body.First.Value;
+            int newX = (head.X + vX + Console.WindowWidth) % Console.WindowWidth;
+            int newY = (head.Y + vY + Console.WindowHeight) % Console.WindowHeight;
+            if (DetectCollision(newX, newY))
+                return;             // game over
+            Point newHead = new Point(bodySymbol, newX, newY);
+            body.AddFirst(newHead);
+
+            // If snake ate the fruit, create new fruit
+            if (newX == fruit.X && newY == fruit.Y)
+                fruit.SetRandomPositionAndDraw();
+            // If snake didn't eat, remove snake's last element
+            else
             {
                 Point last = body.Last.Value;
-                // last.Draw();
-                Console.SetCursorPosition(last.x, last.y);
-                Console.Write(' ');
+                Console.SetCursorPosition(last.X, last.Y);
+                Console.Write(' '); // draw empty space where the last point was
                 body.RemoveLast();
             }
-
-            // Move the head to new position
-            Point first = body.First.Value;
-            int newX = (first.x + speedX + Console.WindowWidth) % Console.WindowWidth;
-            int newY = (first.y + speedY + Console.WindowHeight) % Console.WindowHeight;
-            body.AddFirst(new Point() { x = newX, y = newY, symbol = bodyPart });
-            body.First.Value.Draw();
         }
     }
 }
