@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 
 namespace SnakeGame
 {
@@ -19,17 +18,38 @@ namespace SnakeGame
             Draw();
         }
 
+        /**************************************************************/
+
         public void Draw()
         {
             Console.SetCursorPosition(X, Y);
             Console.Write(Symbol);
         }
 
-        public void SetRandomPositionAndDraw()
+        /**************************************************************/
+
+        public void SetRandomPositionAndDraw(LinkedList<Point> pointsToAvoid)
         {
+            bool pickedForbiddenPoint;
             Random rnd = new Random();
-            X = rnd.Next(0, Console.WindowWidth);
-            Y = rnd.Next(0, Console.WindowHeight);
+
+            // Repeat the loop until an empty point is picked
+            do
+            {
+                pickedForbiddenPoint = false;
+                X = rnd.Next(0, Console.WindowWidth);
+                Y = rnd.Next(0, Console.WindowHeight);
+
+                // Check if the point is not occupied
+                foreach (Point p in pointsToAvoid)
+                    if (p.X == X && p.Y == Y)
+                    {
+                        pickedForbiddenPoint = true;
+                        break;
+                    }
+            }
+            while (pickedForbiddenPoint);
+
             Draw();
         }
     }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 
 namespace SnakeGame
 {
@@ -10,17 +9,19 @@ namespace SnakeGame
         char bodySymbol;
         int vX = 1, vY = 0;         // snake velocity, initially set towards right
 
-        // Constructor which puts snake head at the starting position and body to the left of head
-        public Snake(char snakeBody, int startX, int startY, int snakeLength)
+        // Constructor - puts snake head at the starting position and body to the left of head
+        public Snake(char symbol, int startX, int startY, int initialLength)
         {
-            bodySymbol = snakeBody;
-            for (int i = 0; i < snakeLength; i++)
+            bodySymbol = symbol;
+            for (int i = 0; i < initialLength; i++)
             {
                 Point p = new Point(bodySymbol, startX, startY);
                 body.AddLast(p);
                 startX--;
             }
         }
+
+        /**************************************************************/
 
         public void ChangeVelocity(ConsoleKey key)
         {
@@ -45,6 +46,8 @@ namespace SnakeGame
             }
         }
 
+        /**************************************************************/
+
         public bool DetectCollision(int newX, int newY)
         {
             // Check if the new head position collides with any of the snake elements
@@ -59,9 +62,11 @@ namespace SnakeGame
             return false;           // return false if no collisions
         }
 
+        /**************************************************************/
+
         public bool MoveSnake(Point fruit)
         {
-            // Move the head to new position
+            // Move snake head to new position by creating a new element there
             Point head = body.First.Value;
             int newX = (head.X + vX + Console.WindowWidth) % Console.WindowWidth;
             int newY = (head.Y + vY + Console.WindowHeight) % Console.WindowHeight;
@@ -72,13 +77,13 @@ namespace SnakeGame
 
             // If snake ate the fruit, create new fruit
             if (newX == fruit.X && newY == fruit.Y)
-                fruit.SetRandomPositionAndDraw();
-            // If snake didn't eat, remove snake's last element
+                fruit.SetRandomPositionAndDraw(body);
+            // If snake did not eat, remove snake's last element
             else
             {
                 Point last = body.Last.Value;
                 Console.SetCursorPosition(last.X, last.Y);
-                Console.Write(' '); // draw empty space where the last point was
+                Console.Write(' '); // draw empty space where the last snake part was
                 body.RemoveLast();
             }
 

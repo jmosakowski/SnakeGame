@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 
 namespace SnakeGame
@@ -14,13 +13,18 @@ namespace SnakeGame
             int gameSpeed = 5;
             int width = 40, height = 20;
 
-            // Set console to the desired size and hide the cursor
-            Console.SetWindowSize(width, height);
-            Console.CursorVisible = false;
+            Console.SetWindowSize(width, height);   // set console size
+            Console.CursorVisible = false;          // hide the cursor
 
-            // Create the snake and fruit at some starting positions
-            Snake harry = new Snake(snakeSymbol, width / 2, height / 2, snakeLength);
-            Point cherry = new Point(fruitSymbol, width / 2, height / 3);
+            // Create the snake at some initial position
+            int snakePosX = width / 2;
+            int snakePosY = height / 2;
+            Snake harry = new Snake(snakeSymbol, snakePosX, snakePosY, snakeLength);
+
+            // Create the fruit at some initial position
+            int fruitPosX = 3 * width / 4;
+            int fruitPosY = height / 2;
+            Point cherry = new Point(fruitSymbol, fruitPosX, fruitPosY);
 
             // Game loop
             bool gameOn = true;
@@ -28,11 +32,11 @@ namespace SnakeGame
             {
                 if (Console.KeyAvailable)
                 {
-                    ConsoleKey consoleKey = Console.ReadKey(true).Key;  // true so the pressed key is not displayed
-                    harry.ChangeVelocity(consoleKey);
+                    ConsoleKey key = Console.ReadKey(true).Key; // true so the key is not printed
+                    harry.ChangeVelocity(key);
                 }
 
-                Thread.Sleep(1000 / gameSpeed);
+                Thread.Sleep(1000 / gameSpeed);                 // pause between each move
                 gameOn = harry.MoveSnake(cherry);
             }
 
