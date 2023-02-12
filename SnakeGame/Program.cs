@@ -43,7 +43,8 @@ namespace SnakeGame
             // Game end - display message below the game board
             Console.SetWindowSize(width, height + 10);
             Console.SetCursorPosition(0, height + 1);
-            Console.WriteLine("Game over!");
+            Console.WriteLine("Game over! Press any key to quit.");
+            Console.ReadKey();
         }
     }
 }
